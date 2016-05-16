@@ -72,6 +72,8 @@ setup_diff
     popd
 } >/dev/null
 
+. $rootdir/test-functions.sh
+
 scenarios=()
 for t in "$@"
 do
