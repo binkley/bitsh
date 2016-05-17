@@ -1,2 +1,5 @@
+SHELL=/bin/bash
+
 test:
-	./test-bitsh.sh t
+	@[ -t 1 ] && flags=-c ; \
+	./test-bitsh.sh $$flags t

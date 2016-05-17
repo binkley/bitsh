@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function setup_colors()
 {
     # TODO: Should test that 'tput color' > 0?
@@ -46,19 +48,21 @@ function enable_debug()
     echo "$0: Called with $@"
 }
 
-color=false
+[[ -t 1 ]] && color=true || color=false
 quiet=false
 while getopts :cdq-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    c | color ) color=true ; setup_colors ;;
+    c | color ) color=true ;;
     d | debug ) enable_debug "$@" ;;
     q | quiet ) quiet=true ;;
     * ) print_usage >&2 ; exit 3 ;;
     esac
 done
 shift $((OPTIND - 1))
+
+$color && setup_colors
 
 case $# in
 0 ) print_usage >&2 ; exit 3 ;;
@@ -72,21 +76,21 @@ setup_diff
     popd
 } >/dev/null
 
+. $rootdir/bitsh.sh
 . $rootdir/test-functions.sh
 
-scenarios=()
 for t in "$@"
 do
     if [[ -d "$t" ]]
     then
-        scenarios=("${scenarios[@]}" $t/*.sh)
+        scenarios=($t/*.sh)
     else
-        scenarios=("${scenarios[@]}" $t)
+        scenarios=($t)
     fi
 done
 set -- "${scenarios[@]}"
 
-let passed=0 failed=0 errored=0
+let passed=0 failed=0 errored=0 || true
 for t in "$@"
 do
     if ! $quiet
