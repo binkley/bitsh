@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
 set -e
 
 function setup_colors()
@@ -79,25 +81,30 @@ setup_diff
 } >/dev/null
 
 . $rootdir/bitsh.sh
-. $rootdir/test-functions.sh
+
+for f in $rootdir/f/*.sh
+do
+    . $f
+done
 
 for t in "$@"
 do
     if [[ -d "$t" ]]
     then
-        scenarios=($t/*.sh)
+        set -- $(find $t -type f -name \*.sh)
     else
-        scenarios=($t)
+        set -- $t
     fi
 done
-set -- "${scenarios[@]}"
 
 let passed=0 failed=0 errored=0 || true
 for t in "$@"
 do
     if ! $quiet
     then
-        echo "${pbold}Scenario ${t##*/}:${preset}"
+        s=${t##*/}
+        s=${s%.sh}
+        echo "${pbold}Script $s:${preset}"
     fi
     . $t
 done

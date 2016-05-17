@@ -1,12 +1,12 @@
-# Sourced by test-bitsh.sh
+# vi: ft=bash
+# Source me
 
-function t {
-    test_name=t
-    exit_code=0
-    expected=''
-    actual=''
-    _print_result
-    let ++passed
+function pass {
+    local -r expected=''
+    local -r actual=''
+    "$@"
 }
 
-t
+SCENARIO 'Verify framekwork' \
+    GIVEN nothing \
+    THEN pass
