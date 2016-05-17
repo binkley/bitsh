@@ -2,17 +2,16 @@
 # Source me
 
 function _bad_syntax {
-    local next=$1
+    local -r order=$1
     shift
-    for more
-    do
-        next="$next or $more"
-    done
+    local valid="$@"
+    valid="${valid// / or }"
+    readonly valid
 
-    local stack=($(caller 1))
-    local previous=${stack[1]}
+    local -r stack=($(caller 1))
+    local -r previous=${stack[1]}
 
-    echo "$0: Bad scenario: No $next after $previous: $scenario" >&2
+    echo "$0: Bad scenario: No $valid $order $previous: $scenario" >&2
     exit 3
 }
 
@@ -128,7 +127,7 @@ function SCENARIO {
 
     case $1 in
     GIVEN ) "$@" _end ;;
-    * ) _bad_syntax GIVEN ;;
+    * ) _bad_syntax after GIVEN ;;
     esac
 
     local exit_code=$?

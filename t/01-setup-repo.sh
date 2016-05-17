@@ -3,7 +3,7 @@
 
 function check_status {
     in_repo git status >$tmpdir/out 2>$tmpdir/err
-    "$@"
+    AND "$@"
 }
 
 SCENARIO 'New repo' \
