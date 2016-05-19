@@ -11,8 +11,9 @@ function exit_with {
 }
 
 function on_stderr {
+    local expected
     case $1 in
-    - ) local expected=$(</dev/stdin) ;;
+    - ) read -d '' -r expected || true ;;
     * ) local expected="$1" ;;
     esac
     shift
@@ -24,9 +25,10 @@ function on_stderr {
 }
 
 function on_stdout {
+    local expected
     case $1 in
-    - ) local expected="$(</dev/stdin)" ;;
-    * ) local expected="$1" ;;
+    - ) read -d '' -r expected || true ;;
+    * ) expected="$1" ;;
     esac
     shift
 
