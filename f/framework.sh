@@ -15,17 +15,19 @@ function _bad_syntax {
     exit 3
 }
 
+__pass=$(printf "\xE2\x9C\x93")
+__fail=$(printf "\xE2\x9C\x97")
+__error=$(printf "\xE2\x9D\x97")
+
 function _print_result {
     local -r stack=($(caller 1))
     local -r previous=${stack[1]}
-
-    echo -n '- '
 
     if (( 0 == exit_code ))
     then
         if ! $quiet
         then
-            echo "${pgreen}PASS${preset} $description"
+            echo -e "${pgreen}$__pass${preset} $description"
         fi
     elif (( 1 == exit_code ))
     then
@@ -37,7 +39,7 @@ function _print_result {
             && local -r actual_sep=$'\n' || local -r actual_sep=' '
         $color && local -r color_flag=always || color_flag=never
         cat <<EOM
-${pred}FAIL${preset} $description
+${pred}$__fail${preset} $description
 - ${pbold}Scenario:$preset $scenario
 - '$previous' expected${expected_sep}${pcyan}$expected${preset}
 - But got${actual_sep}${pcyan}$actual${preset}
@@ -50,7 +52,7 @@ $(<$stderr)
 EOM
     else
         cat <<EOE
-${pmagenta}ERROR${preset} $description
+${pmagenta}$__error${preset} $description
 - ${pbold}Scenario:$preset $scenario
 - $previous exited $exit_code
 - ${pbold}Standard out:$preset

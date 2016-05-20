@@ -2,9 +2,9 @@
 # Source me
 
 function exit_with {
+    local actual=$?
     local expected=$1
     shift
-    local actual=$?
 
     (( expected == actual ))
     AND "$@"

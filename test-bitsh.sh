@@ -2,7 +2,7 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
-set -e
+#set -e
 
 function setup_colors()
 {
@@ -122,7 +122,7 @@ if ! $quiet
 then
     (( 0 == passed )) && ppassed= || ppassed=${pgreen}
     (( 0 == failed )) && pfailed= || pfailed=${pred}
-    (( 0 == errored )) && perrored= || perrored=${pred}
+    (( 0 == errored )) && perrored= || perrored=${pbold}${pred}
     cat <<EOS
 ${pbold}Summary${preset}: ${ppassed}$passed PASSED${preset}, ${pfailed}$failed FAILED${preset}, ${perrored}$errored ERRORED${preset}
 EOS
