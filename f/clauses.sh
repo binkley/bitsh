@@ -24,7 +24,7 @@ function with_commit {
     local -r message="$2"
     shift 2
 
-    uuid >$file
+    uuidgen >$file
     {
         git add $file
         git commit $file -m "$message"
