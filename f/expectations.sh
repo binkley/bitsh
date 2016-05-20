@@ -14,11 +14,11 @@ function on_stderr {
     local expected
     case $1 in
     - ) read -d '' -r expected || true ;;
-    * ) local expected="$1" ;;
+    * ) expected="$1" ;;
     esac
     shift
 
-    local actual="$(<$tmpdir/err)"
+    local actual="$(<$stderr)"
 
     [[ "$expected" == "$actual" ]]
     AND "$@"
@@ -32,7 +32,7 @@ function on_stdout {
     esac
     shift
 
-    local actual="$(<$tmpdir/out)"
+    local actual="$(<$stdout)"
 
     [[ "$expected" == "$actual" ]]
     AND "$@"

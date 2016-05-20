@@ -11,13 +11,23 @@ function new_repo {
     esac
 
     local -r repo_dir=$tmpdir/git
-    git init $repo_dir >/dev/null
-    "$@"
+    git init $repo_dir >$stdout 2>$stderr
+    AND "$@"
 }
 
 function in_repo {
-    trap 'cd $old_pwd' RETURN
-    local -r old_pwd=$PWD
-    cd $repo_dir
-    "$@"
+    (cd $repo_dir; "$@")
+}
+
+function with_commit {
+    local -r file=$1
+    local -r message="$2"
+    shift 2
+
+    uuid >$file
+    {
+        git add $file
+        git commit $file -m "$message"
+    } >$stdout 2>$stderr
+    AND "$@"
 }

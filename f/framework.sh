@@ -44,9 +44,9 @@ ${pred}FAIL${preset} $description
 - ${pbold}Difference:$reset
 $(git --no-pager diff --color=$color_flag --word-diff=plain $tmpdir/expected $tmpdir/actual | sed 1,4d)
 - ${pbold}Standard out:$preset
-$(<$tmpdir/out)
+$(<$stdout)
 - ${pbold}Standard err:$preset
-$(<$tmpdir/err)
+$(<$stderr)
 EOM
     else
         cat <<EOE
@@ -54,9 +54,9 @@ ${pmagenta}ERROR${preset} $description
 - ${pbold}Scenario:$preset $scenario
 - $previous exited $exit_code
 - ${pbold}Standard out:$preset
-$(<$tmpdir/out)
+$(<$stdout)
 - ${pbold}Standard err:$preset
-$(<$tmpdir/err)
+$(<$stderr)
 EOE
     fi
 
@@ -110,6 +110,8 @@ function _maybe_debug_if_not_passed {
 function SCENARIO {
     trap 'rm -rf $tmpdir' RETURN
     local -r tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
+    local -r stdout=$tmpdir/stdout
+    local -r stderr=$tmpdir/stderr
 
     local scenario=${FUNCNAME}
     for arg
