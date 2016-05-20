@@ -2,7 +2,7 @@
 # Source me
 
 function _save_commit_messages {
-    commit_messages=("${commit_messages[@]}" "$1")
+    commit_messages+=("$1")
 }
 
 function has_commits {
