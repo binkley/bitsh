@@ -101,7 +101,21 @@ do
         s=${s%.sh}
         echo "${pbold}Script $s:${preset}"
     fi
+    let last_passed=$passed || true
+    let last_failed=$failed || true
+    let last_errorer=$errored || true
     . $t
+    if ! $quiet
+    then
+        all=()
+        let t_errored=$((errored - last_errored)) || true
+        (( 0 == t_errored )) || all+=("$t_errored errored")
+        let t_failed=$((failed - last_failed)) || true
+        (( 0 == t_failed )) || all+=("$t_failed failed")
+        let t_passed=$((passed - last_passed)) || true
+        (( 0 == t_passed )) || all+=("$t_passed passed")
+        echo "${all[@]}"
+    fi
 done
 
 if ! $quiet

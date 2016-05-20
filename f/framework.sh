@@ -19,7 +19,7 @@ function _print_result {
     local -r stack=($(caller 1))
     local -r previous=${stack[1]}
 
-    echo -n '* '
+    echo -n '- '
 
     if (( 0 == exit_code ))
     then
