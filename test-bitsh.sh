@@ -9,16 +9,11 @@ function setup_colors()
     [[ -t 1 ]] || return
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && ncolors -ge 8 ]] || return
-    pblack=$(tput setaf 0)
+    pbold=$(tput bold)
     pred=$(tput setaf 1)
     pgreen=$(tput setaf 2)
-    pyellow=$(tput setaf 3)
-    pblue=$(tput setaf 4)
     pmagenta=$(tput setaf 5)
     pcyan=$(tput setaf 6)
-    pwhite=$(tput setaf 7)
-    prev=$(tput rev)
-    pbold=$(tput bold)
     preset=$(tput sgr0)
 }
 
