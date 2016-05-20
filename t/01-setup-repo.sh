@@ -2,7 +2,7 @@
 # Source me
 
 function check_status {
-    in_repo git status >$stdout 2>$stderr
+    git status >$stdout 2>$stderr
     AND "$@"
 }
 

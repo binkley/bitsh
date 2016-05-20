@@ -12,11 +12,7 @@ function new_repo {
 
     local -r repo_dir=$tmpdir/git
     git init $repo_dir >$stdout 2>$stderr
-    AND "$@"
-}
-
-function in_repo {
-    (cd $repo_dir; "$@")
+    (cd $repo_dir; AND "$@")
 }
 
 function with_commit {
