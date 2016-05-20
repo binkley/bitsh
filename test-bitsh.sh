@@ -105,14 +105,14 @@ do
     let last_failed=$failed || true
     let last_errorer=$errored || true
     . $t
+    let t_passed=$((passed - last_passed)) || true
+    let t_failed=$((failed - last_failed)) || true
+    let t_errored=$((errored - last_errored)) || true
     if ! $quiet
     then
         all=()
-        let t_errored=$((errored - last_errored)) || true
         (( 0 == t_errored )) || all+=("$t_errored errored")
-        let t_failed=$((failed - last_failed)) || true
         (( 0 == t_failed )) || all+=("$t_failed failed")
-        let t_passed=$((passed - last_passed)) || true
         (( 0 == t_passed )) || all+=("$t_passed passed")
         echo "${all[@]}"
     fi
