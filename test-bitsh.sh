@@ -63,8 +63,7 @@ function $name {
         __tally \$__e
     else
         "\$@"
-        __e=\$?
-        __tally \$__e
+        __tally \$?
     fi
 }
 EOF
