@@ -15,11 +15,8 @@ function _bad_syntax {
     exit 3
 }
 
-__pass=$(printf "\xE2\x9C\x93")
-__fail=$(printf "\xE2\x9C\x97")
-__error=$(printf "\xE2\x9D\x97")
-
 function _print_result {
+    local -r exit_code=$1
     local -r stack=($(caller 1))
     local -r previous=${stack[1]}
 
@@ -27,19 +24,20 @@ function _print_result {
     then
         if ! $quiet
         then
-            echo -e "${pgreen}$__pass${preset} $description"
+            echo -e "$pgreen$pcheckmark$preset $description"
         fi
     elif (( 1 == exit_code ))
     then
-        echo "$expected" >$tmpdir/expected
+        : ${expected:=<nothing>} ${actual:=<nothing>}
+        echo "$expected}" >$tmpdir/expected
         (( 1 < $(wc -l $tmpdir/expected | cut -d' ' -f1))) \
             && local -r expected_sep=$'\n' || local -r expected_sep=' '
-        echo "$actual" >$tmpdir/actual
+        echo "$actual}" >$tmpdir/actual
         (( 1 < $(wc -l $tmpdir/actual | cut -d' ' -f1))) \
             && local -r actual_sep=$'\n' || local -r actual_sep=' '
         $color && local -r color_flag=always || color_flag=never
         cat <<EOM
-${pred}$__fail${preset} $description
+$pred$pballotx$preset $description
 - ${pbold}Scenario:$preset $scenario
 - '$previous' expected${expected_sep}${pcyan}$expected${preset}
 - But got${actual_sep}${pcyan}$actual${preset}
@@ -52,7 +50,7 @@ $(<$stderr)
 EOM
     else
         cat <<EOE
-${pmagenta}$__error${preset} $description
+$pboldred$pinterrobang$preset $description
 - ${pbold}Scenario:$preset $scenario
 - $previous exited $exit_code
 - ${pbold}Standard out:$preset
@@ -61,29 +59,14 @@ $(<$stdout)
 $(<$stderr)
 EOE
     fi
-
-    return $exit_code
-}
-
-function _end {
-    local exit_code=$?
-    _print_result
 }
 
 function AND {
-    local exit_code=$?
-    case $exit_code in
-    0 ) "$@" ;;
-    * ) _print_result ;;
-    esac
+    "$@"
 }
 
 function THEN {
-    local exit_code=$?
-    case $exit_code in
-    0 ) "$@" ;;
-    * ) _print_result ;;
-    esac
+    "$@"
 }
 
 function WHEN {
@@ -113,7 +96,9 @@ function SCENARIO {
     trap 'rm -rf $tmpdir' RETURN
     local -r tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
     local -r stdout=$tmpdir/stdout
+    touch $stdout
     local -r stderr=$tmpdir/stderr
+    touch $stderr
 
     local scenario=${FUNCNAME}
     for arg
@@ -129,20 +114,19 @@ function SCENARIO {
     local -r description="$1"
     shift
 
+    local __tallied=false
     case $1 in
-    GIVEN ) "$@" _end ;;
+    GIVEN )
+        pushd $PWD >/dev/null
+        "$@"
+        __tally $?
+        popd >/dev/null ;;
     * ) _bad_syntax after GIVEN ;;
     esac
 
     local exit_code=$?
 
-    (( 0 != exit_code )) && _maybe_debug_if_not_passed
-
-    case $exit_code in
-    0 ) let ++passed ;;
-    1 ) let ++failed  ;;
-    * ) let ++errored  ;;
-    esac
+    # (( 0 != exit_code )) && _maybe_debug_if_not_passed
 
     return $exit_code
 }

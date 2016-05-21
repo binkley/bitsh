@@ -12,18 +12,18 @@ function new_repo {
 
     local -r repo_dir=$tmpdir/git
     git init $repo_dir >$stdout 2>$stderr
-    (cd $repo_dir; AND "$@")
+    cd $repo_dir
 }
+_register new_repo
 
 function with_commit {
     local -r file=$1
     local -r message="$2"
-    shift 2
 
     uuidgen >$file
     {
         git add $file
         git commit $file -m "$message"
     } >$stdout 2>$stderr
-    AND "$@"
 }
+_register with_commit 2

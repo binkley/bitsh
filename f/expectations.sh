@@ -4,11 +4,10 @@
 function exit_with {
     local actual=$?
     local expected=$1
-    shift
 
     (( expected == actual ))
-    AND "$@"
 }
+_register exit_with 1
 
 function on_stderr {
     local expected
@@ -21,8 +20,8 @@ function on_stderr {
     local actual="$(<$stderr)"
 
     [[ "$expected" == "$actual" ]]
-    AND "$@"
 }
+_register on_stderr 1
 
 function on_stdout {
     local expected
@@ -30,10 +29,9 @@ function on_stdout {
     - ) read -d '' -r expected || true ;;
     * ) expected="$1" ;;
     esac
-    shift
 
     local actual="$(<$stdout)"
 
     [[ "$expected" == "$actual" ]]
-    AND "$@"
 }
+_register on_stdout

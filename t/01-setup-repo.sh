@@ -3,7 +3,6 @@
 
 function check_status {
     git status >$stdout 2>$stderr
-    AND "$@"
 }
 
 SCENARIO 'New repo' \

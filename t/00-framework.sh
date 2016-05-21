@@ -2,10 +2,9 @@
 # Source me
 
 function pass {
-    local -r expected=''
-    local -r actual=''
-    "$@"
+    return 0
 }
+_register pass
 
 SCENARIO 'Verify framekwork' \
     GIVEN nothing \
