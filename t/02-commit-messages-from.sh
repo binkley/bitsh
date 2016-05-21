@@ -14,7 +14,7 @@ function has_commits {
     "$@"
 }
 
-SCENARIO 'New repo' \
+SCENARIO 'Count commits' \
     GIVEN new_repo \
         AND with_commit some-file 'First commit'
     WHEN nothing \
