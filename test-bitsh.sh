@@ -2,42 +2,35 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
-function _setup_colors()
+function __setup_colors()
 {
     [[ -t 1 ]] || return
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && ncolors -ge 8 ]] || return
-    pgreen=$(printf "\e[32m")
-    pred=$(printf "\e[31m")
-    pboldred=$(printf "\e[31;1m")
-    pcheckmark=$(printf "\xE2\x9C\x93")
-    pballotx=$(printf "\xE2\x9C\x97")
-    pinterrobang=$(printf "\xE2\x80\xBD")
-    preset=$(printf "\e[0m")
+    readonly pgreen=$(printf "\e[32m")
+    readonly pred=$(printf "\e[31m")
+    readonly pboldred=$(printf "\e[31;1m")
+    readonly preset=$(printf "\e[0m")
 }
 
-function _setup_diff()
-{
-    if [[ -n $(which dwdiff 2>/dev/null) ]]
-    then
-        shopt -s expand_aliases
-        if $color
-        then
-            alias diff='dwdiff -c -l -A best'
-        else
-            alias diff='dwdiff -A best'
-        fi
-    fi
-}
-
-function print_usage()
-{
+function __print_usage {
     cat <<EOU
-Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet] <script> [tes__t_scripts]
+Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet] <tests ...>
 EOU
 }
 
-function _enable_debug()
+function __print_help {
+    __print_usage
+    cat <<'EOH'
+
+Options:
+  -c,--color    Print in color
+  -d,--debug    Print extra output
+  -q,--quiet    Print minimal output
+EOH
+}
+
+function __enable_debug()
 {
     export debug=true
     export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
@@ -51,6 +44,11 @@ function _register {
     1 ) local -r name=$1 arity=0 ;;
     2 ) local -r name=$1 arity=$2 ;;
     esac
+    case $(type -t $name) in
+    function ) ;;
+    * ) echo "$0: $FUNCNAME: Not a function: $name" >&2
+        exit 3 ;;
+    esac
     read -d '' -r wrapper <<EOF
 function $name {
     # Original function
@@ -63,11 +61,21 @@ function $name {
         __tally \$__e
     else
         "\$@"
-        __tally \$?
+        __e=\$?
+        __tally \$__e
     fi
 }
 EOF
     eval "$wrapper"
+}
+
+function _start {
+    local __tallied=false
+    local __e=0
+    pushd $PWD >/dev/null
+    "$@"
+    __tally $?
+    while popd >/dev/null 2>&1 ; do : ; done
 }
 
 let __passed=0 __failed=0 __errored=0
@@ -84,37 +92,34 @@ function __tally {
     return $__e
 }
 
-[[ -t 1 ]] && color=true || color=false
-quiet=false
-while getopts :cdq-: opt
+[[ -t 1 ]] && _color=true || _color=false
+_quiet=false
+while getopts :cdhq-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    c | color ) color=true ;;
-    d | debug ) _enable_debug "$@" ;;
-    q | quiet ) quiet=true ;;
-    * ) print_usage >&2 ; exit 3 ;;
+    c | _color ) _color=true ;;
+    d | debug ) __enable_debug "$@" ;;
+    h | help ) __print_help ; exit 0 ;;
+    q | _quiet ) _quiet=true ;;
+    * ) __print_usage >&2 ; exit 3 ;;
     esac
 done
 shift $((OPTIND - 1))
 
-$color && _setup_colors
+$_color && __setup_colors
 
 case $# in
-0 ) print_usage >&2 ; exit 3 ;;
+0 ) __print_usage >&2 ; exit 3 ;;
 esac
-
-_setup_diff
 
 {
     pushd $(dirname $0)
-    rootdir=$(pwd -P)
+    root_dir=$(pwd -P)
     popd
 } >/dev/null
 
-. $rootdir/bitsh.sh
-
-for f in $rootdir/f/*.sh
+for f in $root_dir/f/*.sh
 do
     . $f
 done
@@ -131,7 +136,7 @@ done
 
 for t in "$@"
 do
-    if ! $quiet
+    if ! $_quiet
     then
         s=${t##*/}
         s=${s%.sh}
@@ -142,21 +147,22 @@ do
     let __last_errorer=$__errored
     pushd $PWD >/dev/null
     . $t
-    popd >/dev/null
+    while popd >/dev/null 2>&1 ; do : ; done
     let __t_passed=$((__passed - __last_passed))
     let __t_failed=$((__failed - __last_failed))
     let __t_errored=$((__errored - __last_errored))
-    if ! $quiet
+    if ! $_quiet
     then
-        all=()
-        (( 0 == __t_errored )) || all+=("$__t_errored errored")
-        (( 0 == __t_failed )) || all+=("$__t_failed failed")
-        (( 0 == __t_passed )) || all+=("$__t_passed passed")
-        echo "${all[@]}"
+        __all=()
+        (( 0 == __t_errored )) || __all+=("$__t_errored errored")
+        (( 0 == __t_failed )) || __all+=("$__t_failed failed")
+        (( 0 == __t_passed )) || __all+=("$__t_passed passed")
+        IFS=, eval '__s="${__all[*]}"'
+        echo "${__s//,/, }"
     fi
 done
 
-if ! $quiet
+if ! $_quiet
 then
     (( 0 == __passed )) && ppassed= || ppassed=${pgreen}
     (( 0 == __failed )) && pfailed= || pfailed=${pred}
